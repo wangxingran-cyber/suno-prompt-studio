@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Suno Prompt Studio V4</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-wave" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i>
+        </span>
+        <div>
+          <h1>Suno Prompt Studio</h1>
+          <p>Deck Workspace</p>
+        </div>
+      </div>
+      <div class="global-actions">
+        <select id="presetSelect" aria-label="Preset">
+          <option value="">Preset</option>
+        </select>
+        <button id="savePresetBtn" type="button">Save Preset</button>
+        <button id="copyStyleBtn" type="button">Copy Style</button>
+        <button id="copyExcludeBtn" type="button">Copy Exclude</button>
+        <button id="copyLyricsBtn" type="button">Copy Lyrics</button>
+        <button id="clearBtn" class="muted" type="button">Clear</button>
+      </div>
+    </header>
+
+    <main class="deck-shell" id="deckShell" data-active="style">
+      <section class="deck active" data-deck="style" aria-label="Style Builder">
+        <button class="deck-tab" data-open="style" type="button">
+          <span>Style Builder</span>
+          <strong id="styleSummary">0 tags</strong>
+        </button>
+        <div class="deck-body style-workspace">
+          <aside class="category-rail">
+            <div class="rail-head">
+              <span>Category Rail</span>
+              <strong id="visibleCategoryCount">0 shown</strong>
+            </div>
+            <div id="categoryControls" class="category-controls"></div>
+          </aside>
+
+          <section class="style-main">
+            <div class="style-tools">
+              <input id="chipSearchV3" type="search" placeholder="Search style, instrument, mood..." aria-label="Search prompts">
+              <button id="showPromptBtn" type="button">Show Prompt</button>
+              <button data-copy-target="styleOutputV3" type="button">Copy Style</button>
+            </div>
+            <div class="tempo-panel">
+              <div class="tempo-copy">
+                <strong>BPM Fader</strong>
+                <span id="tempoReadout">82 bpm · slow tempo</span>
+              </div>
+              <div class="horizontal-fader">
+                <div class="fader-scale" aria-hidden="true">
+                  <span>40</span>
+                  <span>90</span>
+                  <span>140</span>
+                  <span>190</span>
+                  <span>260</span>
+                </div>
+                <input id="bpmFader" class="bpm-fader" type="range" min="40" max="260" value="82" aria-label="BPM Fader">
+              </div>
+              <button id="exactBpmSwitch" class="pill-switch exact off" type="button" aria-pressed="false">
+                <span class="switch-label left">Exact BPM</span>
+                <span class="switch-label right">Off</span>
+                <span class="switch-knob">Off</span>
+              </button>
+            </div>
+            <div id="selectedLaneList" class="lane-list selected-lanes"></div>
+            <div id="promptOutputPanel" class="prompt-output-panel hidden">
+              <div class="inspector-block">
+                <div class="block-title">
+                  <span>Style of Music</span>
+                  <button data-copy-target="styleOutputV3" type="button">Copy</button>
+                </div>
+                <textarea id="styleOutputV3" rows="4" spellcheck="false"></textarea>
+              </div>
+              <div class="inspector-block">
+                <div class="block-title">
+                  <span>Exclude Styles</span>
+                  <button data-copy-target="excludeOutputV3" type="button">Copy</button>
+                </div>
+                <textarea id="excludeOutputV3" rows="3" spellcheck="false"></textarea>
+              </div>
+            </div>
+          </section>
+
+          <aside class="inspector options-panel">
+            <div class="option-context">
+              <span id="activeOptionCategoryLabel">Genre options</span>
+            </div>
+            <div class="options-tools">
+              <input id="customPromptV3" type="text" placeholder="Custom English prompt">
+              <button id="addCustomBtnV3" type="button">Add</button>
+            </div>
+            <div id="optionList" class="option-list"></div>
+            <div class="inspector-block">
+              <div class="block-title">
+                <span>Quality</span>
+              </div>
+              <div id="qualityListV3" class="quality-list"></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="deck collapsed" data-deck="library" aria-label="Prompt Library">
+        <button class="deck-tab" data-open="library" type="button">
+          <span>Prompt Library</span>
+          <strong id="librarySummary">0 terms</strong>
+        </button>
+        <div class="deck-body library-workspace">
+          <div class="library-toolbar">
+            <input id="librarySearchV3" type="search" placeholder="Search jazz / clean / guitar..." aria-label="Search library">
+            <select id="categoryFilterV3" aria-label="Category"></select>
+            <select id="sourceFilterV3" aria-label="Source">
+              <option value="all">All sources</option>
+              <option value="official">Official terms</option>
+              <option value="community">Community high-frequency</option>
+              <option value="inferred">Inferred</option>
+              <option value="custom">Custom</option>
+            </select>
+            <span id="libraryStatsV3" class="stats"></span>
+          </div>
+          <div class="library-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Prompt</th>
+                  <th>中文注解</th>
+                  <th>References</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="libraryRowsV3"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="deck collapsed" data-deck="lyrics" aria-label="Lyrics Builder">
+        <button class="deck-tab" data-open="lyrics" type="button">
+          <span>Lyrics Builder</span>
+          <strong id="lyricsSummary">Vocal · ZH</strong>
+        </button>
+        <div class="deck-body lyrics-workspace">
+          <section class="lyrics-form">
+            <label>歌名
+              <input id="songTitleV3" placeholder="必填，例如：雨后的咖啡馆">
+            </label>
+            <div class="field-pair">
+              <label>Type
+                <select id="songTypeV3">
+                  <option value="vocal">Vocal Song</option>
+                  <option value="instrumental">Instrumental</option>
+                  <option value="hook">Short Hook</option>
+                </select>
+              </label>
+              <label>Language
+                <select id="lyricLanguageV3">
+                  <option value="zh">中文</option>
+                  <option value="en">English</option>
+                  <option value="bilingual">中文 / English</option>
+                  <option value="ja">日本語</option>
+                  <option value="ko">한국어</option>
+                  <option value="pt">Português</option>
+                  <option value="es">Español</option>
+                  <option value="ja_en">日本語 / English</option>
+                  <option value="ko_en">한국어 / English</option>
+                </select>
+              </label>
+            </div>
+            <label>感受
+              <input id="themeV3" placeholder="克制、释然、仍有一点不甘">
+            </label>
+            <label>故事
+              <input id="storyV3" placeholder="离开城市前，在雨后的咖啡馆写下最后一句话">
+            </label>
+            <label>场景
+              <input id="sceneV3" placeholder="深夜、街灯、玻璃窗、空座位">
+            </label>
+            <label>Keywords
+              <input id="keywordsV3" placeholder="neon, empty street, old promise">
+            </label>
+            <label>Vocal / Mood
+              <input id="vocalV3" placeholder="soft female vocal, intimate">
+            </label>
+            <label>Avoid
+              <input id="avoidV3" placeholder="no rap, no heavy drums">
+            </label>
+            <p id="completionNotice" class="completion-notice">点击补全将向 LLM 发送：歌名、感受、故事、场景、草稿、语言设置、风格提示。</p>
+            <button id="generateLyricsV3" type="button">补全</button>
+            <p id="completionRule" class="completion-rule">补全规则：歌名、感受、故事、场景必填；[Verse] 与 [Chorus] 必须写入内容。输入语言不限，补全会按所选 Language 转写为最终歌词表达。</p>
+          </section>
+          <section class="lyrics-output-panel">
+            <div class="timeline" id="structureButtons">
+              <button data-tag="Intro" type="button">Intro</button>
+              <button data-tag="Verse" type="button">Verse</button>
+              <button data-tag="Pre-Chorus" type="button">Pre-Chorus</button>
+              <button data-tag="Chorus" type="button">Chorus</button>
+              <button data-tag="Bridge" type="button">Bridge</button>
+              <button data-tag="Break" type="button">Break</button>
+              <button data-tag="Outro" type="button">Outro</button>
+            </div>
+            <textarea id="lyricsDraftV3" rows="11" spellcheck="false" placeholder="点击上方结构按钮插入 [Verse] / [Chorus]，并在对应段落写入内容。空内容不会进入最终 Lyrics Prompt。"></textarea>
+            <div id="completionPanel" class="completion-panel hidden">
+              <div class="block-title">
+                <span>补全建议</span>
+                <button id="clearCompletionBtn" type="button">Clear</button>
+              </div>
+              <div class="completion-grid">
+                <label>理解摘要
+                  <textarea id="completionUnderstanding" rows="3" spellcheck="false"></textarea>
+                </label>
+                <label>目标语言计划
+                  <textarea id="completionPlan" rows="3" spellcheck="false"></textarea>
+                </label>
+              </div>
+              <label>建议歌词
+                <textarea id="completionLyrics" rows="8" spellcheck="false"></textarea>
+              </label>
+              <label>Notes
+                <textarea id="completionNotes" rows="3" spellcheck="false"></textarea>
+              </label>
+              <div class="completion-actions">
+                <button id="useSummaryBtn" type="button">仅使用理解摘要</button>
+                <button id="insertCompletionBtn" type="button">插入到草稿</button>
+                <button id="replaceSelectionBtn" type="button">替换选中段落</button>
+                <button id="appendChorusBtn" type="button">追加为副歌</button>
+              </div>
+            </div>
+            <div class="final-output">
+              <div class="block-title">
+                <span>Final Lyrics Prompt</span>
+                <button data-copy-target="lyricsOutputV3" type="button">Copy</button>
+              </div>
+              <textarea id="lyricsOutputV3" rows="8" spellcheck="false"></textarea>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <div id="toastV3" class="toast" role="status" aria-live="polite"></div>
+    <script src="./main.js"></script>
+  </body>
+</html>
